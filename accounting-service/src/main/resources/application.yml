@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: accounting-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/erp_db
+    username: erp_user
+    password: erp_pass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+server:
+  port: 8084
+  servlet:
+    context-path: /api/v1
+
+logging:
+  level:
+    root: INFO
+    com.erp.commerce: DEBUG
