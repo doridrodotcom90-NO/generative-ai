@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            maxAge: 3600
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+jwt:
+  secret: your-secret-key-change-this-in-production
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: DEBUG
+    com.erp.commerce: DEBUG
+
+eureka:
+  client:
+    enabled: false
