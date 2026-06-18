@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="003-001" author="erp-team">
+        <comment>Create product and inventory tables</comment>
+
+        <!-- Categories -->
+        <createTable tableName="categories">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <!-- Brands -->
+        <createTable tableName="brands">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <!-- Products -->
+        <createTable tableName="products">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="model_no" type="VARCHAR(100)"/>
+            <column name="barcode" type="VARCHAR(100)">
+                <constraints unique="true"/>
+            </column>
+            <column name="category_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="brand_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="buy_price" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sale_price" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="warranty_months" type="INT"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="products" baseColumnNames="category_id"
+                                 referencedTableName="categories" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="products" baseColumnNames="brand_id"
+                                 referencedTableName="brands" referencedColumnNames="id"/>
+
+        <!-- Product Units -->
+        <createTable tableName="product_units">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="branch_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="imei" type="VARCHAR(20)">
+                <constraints unique="true"/>
+            </column>
+            <column name="serial_no" type="VARCHAR(100)">
+                <constraints unique="true"/>
+            </column>
+            <column name="stock_status" type="VARCHAR(20)" defaultValue="AVAILABLE"/>
+            <column name="condition" type="VARCHAR(20)" defaultValue="NEW"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="product_units" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="product_units" baseColumnNames="branch_id"
+                                 referencedTableName="branches" referencedColumnNames="id"/>
+
+        <!-- Stock Transactions -->
+        <createTable tableName="stock_transactions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="product_unit_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="branch_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_type" type="VARCHAR(50)"/>
+            <column name="reference_type" type="VARCHAR(50)"/>
+            <column name="reference_id" type="BIGINT"/>
+            <column name="qty" type="INT" defaultValue="1"/>
+            <column name="performed_by" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="stock_transactions" baseColumnNames="product_unit_id"
+                                 referencedTableName="product_units" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="stock_transactions" baseColumnNames="branch_id"
+                                 referencedTableName="branches" referencedColumnNames="id"/>
+    </changeSet>
+</databaseChangeLog>

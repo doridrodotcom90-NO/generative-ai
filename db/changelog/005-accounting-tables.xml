@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="005-001" author="erp-team">
+        <comment>Create accounting tables</comment>
+
+        <!-- Accounts Chart of Accounts -->
+        <createTable tableName="accounts">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="account_code" type="VARCHAR(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="account_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_id" type="BIGINT"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="accounts" baseColumnNames="parent_id"
+                                 referencedTableName="accounts" referencedColumnNames="id"/>
+
+        <!-- Journal Entries -->
+        <createTable tableName="journal_entries">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="entry_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reference_type" type="VARCHAR(50)"/>
+            <column name="reference_id" type="BIGINT"/>
+            <column name="memo" type="TEXT"/>
+            <column name="created_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="journal_entries" baseColumnNames="created_by"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <!-- Journal Entry Lines -->
+        <createTable tableName="journal_entry_lines">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="journal_entry_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="branch_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="debit" type="DECIMAL(15,2)" defaultValue="0"/>
+            <column name="credit" type="DECIMAL(15,2)" defaultValue="0"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="journal_entry_lines" baseColumnNames="journal_entry_id"
+                                 referencedTableName="journal_entries" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="journal_entry_lines" baseColumnNames="account_id"
+                                 referencedTableName="accounts" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="journal_entry_lines" baseColumnNames="branch_id"
+                                 referencedTableName="branches" referencedColumnNames="id"/>
+
+        <!-- Bank Accounts -->
+        <createTable tableName="bank_accounts">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="bank_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_no" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="branch_name" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="005-002" author="erp-team">
+        <comment>Insert default chart of accounts</comment>
+        
+        <!-- Assets -->
+        <insert tableName="accounts">
+            <column name="account_code" value="1000"/>
+            <column name="account_name" value="Assets"/>
+            <column name="account_type" value="ASSET"/>
+        </insert>
+        <insert tableName="accounts">
+            <column name="account_code" value="1010"/>
+            <column name="account_name" value="Cash"/>
+            <column name="account_type" value="ASSET"/>
+            <column name="parent_id" value="1"/>
+        </insert>
+        <insert tableName="accounts">
+            <column name="account_code" value="1020"/>
+            <column name="account_name" value="Bank"/>
+            <column name="account_type" value="ASSET"/>
+            <column name="parent_id" value="1"/>
+        </insert>
+
+        <!-- Liabilities -->
+        <insert tableName="accounts">
+            <column name="account_code" value="2000"/>
+            <column name="account_name" value="Liabilities"/>
+            <column name="account_type" value="LIABILITY"/>
+        </insert>
+
+        <!-- Income -->
+        <insert tableName="accounts">
+            <column name="account_code" value="4000"/>
+            <column name="account_name" value="Sales Revenue"/>
+            <column name="account_type" value="INCOME"/>
+        </insert>
+
+        <!-- Expenses -->
+        <insert tableName="accounts">
+            <column name="account_code" value="5000"/>
+            <column name="account_name" value="Cost of Goods Sold"/>
+            <column name="account_type" value="EXPENSE"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

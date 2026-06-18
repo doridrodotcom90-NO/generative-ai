@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="004-001" author="erp-team">
+        <comment>Create sales and customer tables</comment>
+
+        <!-- Customers -->
+        <createTable tableName="customers">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="customer_code" type="VARCHAR(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="VARCHAR(20)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="nid" type="VARCHAR(20)">
+                <constraints unique="true"/>
+            </column>
+            <column name="address" type="TEXT"/>
+            <column name="photo_url" type="VARCHAR(500)"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <!-- Sales -->
+        <createTable tableName="sales">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="invoice_no" type="VARCHAR(100)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="customer_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="branch_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sold_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sale_type" type="VARCHAR(20)" defaultValue="CASH"/>
+            <column name="subtotal" type="DECIMAL(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount" type="DECIMAL(12,2)" defaultValue="0"/>
+            <column name="tax" type="DECIMAL(12,2)" defaultValue="0"/>
+            <column name="grand_total" type="DECIMAL(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_status" type="VARCHAR(20)" defaultValue="UNPAID"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="DRAFT"/>
+            <column name="sale_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="sales" baseColumnNames="customer_id"
+                                 referencedTableName="customers" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="sales" baseColumnNames="branch_id"
+                                 referencedTableName="branches" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="sales" baseColumnNames="sold_by"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <!-- Sale Items -->
+        <createTable tableName="sale_items">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="sale_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_unit_id" type="BIGINT"/>
+            <column name="qty" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_price" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount" type="DECIMAL(12,2)" defaultValue="0"/>
+            <column name="line_total" type="DECIMAL(15,2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="sale_items" baseColumnNames="sale_id"
+                                 referencedTableName="sales" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="sale_items" baseColumnNames="product_id"
+                                 referencedTableName="products" referencedColumnNames="id"/>
+
+        <!-- Payments -->
+        <createTable tableName="payments">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="sale_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_method" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reference_no" type="VARCHAR(100)"/>
+            <column name="provider" type="VARCHAR(50)"/>
+            <column name="received_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="paid_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="COMPLETED"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="payments" baseColumnNames="sale_id"
+                                 referencedTableName="sales" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="payments" baseColumnNames="received_by"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+    </changeSet>
+</databaseChangeLog>

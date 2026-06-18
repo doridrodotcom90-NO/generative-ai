@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="002-001" author="erp-team">
+        <comment>Create authentication and authorization tables</comment>
+
+        <!-- Branches Table -->
+        <createTable tableName="branches">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="TEXT"/>
+            <column name="phone" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(100)"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <!-- Permissions Table -->
+        <createTable tableName="permissions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="VARCHAR(100)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="resource" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Roles Table -->
+        <createTable tableName="roles">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <!-- Role Permissions Junction Table -->
+        <createTable tableName="role_permissions">
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permission_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="role_permissions" columnNames="role_id, permission_id"/>
+        <addForeignKeyConstraint baseTableName="role_permissions" baseColumnNames="role_id"
+                                 referencedTableName="roles" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="role_permissions" baseColumnNames="permission_id"
+                                 referencedTableName="permissions" referencedColumnNames="id"/>
+
+        <!-- Users Table -->
+        <createTable tableName="users">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="email" type="VARCHAR(100)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="phone" type="VARCHAR(20)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="branch_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE"/>
+            <column name="last_login_at" type="TIMESTAMP"/>
+            <column name="failed_login_attempts" type="INT" defaultValue="0"/>
+            <column name="account_locked" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP" nullable="false"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueDb="CURRENT_TIMESTAMP" onUpdate="CURRENT_TIMESTAMP"/>
+            <column name="deleted_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="users" baseColumnNames="role_id"
+                                 referencedTableName="roles" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="users" baseColumnNames="branch_id"
+                                 referencedTableName="branches" referencedColumnNames="id"/>
+        <createIndex indexName="idx_users_email" tableName="users">
+            <column name="email"/>
+        </createIndex>
+        <createIndex indexName="idx_users_phone" tableName="users">
+            <column name="phone"/>
+        </createIndex>
+        <createIndex indexName="idx_users_deleted_at" tableName="users">
+            <column name="deleted_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="002-002" author="erp-team">
+        <comment>Insert default roles and permissions</comment>
+
+        <!-- Insert default permissions -->
+        <insert tableName="permissions">
+            <column name="code" value="USER_CREATE"/>
+            <column name="name" value="Create User"/>
+            <column name="resource" value="USER"/>
+            <column name="action" value="CREATE"/>
+        </insert>
+        <insert tableName="permissions">
+            <column name="code" value="USER_READ"/>
+            <column name="name" value="Read User"/>
+            <column name="resource" value="USER"/>
+            <column name="action" value="READ"/>
+        </insert>
+        <insert tableName="permissions">
+            <column name="code" value="USER_UPDATE"/>
+            <column name="name" value="Update User"/>
+            <column name="resource" value="USER"/>
+            <column name="action" value="UPDATE"/>
+        </insert>
+        <insert tableName="permissions">
+            <column name="code" value="USER_DELETE"/>
+            <column name="name" value="Delete User"/>
+            <column name="resource" value="USER"/>
+            <column name="action" value="DELETE"/>
+        </insert>
+
+        <!-- Insert default roles -->
+        <insert tableName="roles">
+            <column name="code" value="ADMIN"/>
+            <column name="name" value="Administrator"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="code" value="DEALER"/>
+            <column name="name" value="Dealer"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="code" value="RETAIL"/>
+            <column name="name" value="Retail Staff"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="code" value="CUSTOMER"/>
+            <column name="name" value="Customer"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- Insert default branch -->
+        <insert tableName="branches">
+            <column name="code" value="HQ"/>
+            <column name="name" value="Headquarters"/>
+            <column name="phone" value="+1-234-567-8900"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
